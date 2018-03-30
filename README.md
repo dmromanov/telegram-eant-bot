@@ -20,10 +20,18 @@ Environment variables:
 * `TELEGRAM_APIKEY`
 * `DATABASE_URL`
 
+## CLI Commands
+
 Register the bot in Telegram:
 
 ```bash
 $ TELEGRAM_APIKEY=<api-key> ./bin/cake setup webhook_register <domain> <ssl-certificate> <max-requests>
+```
+```bash
+$ TELEGRAM_APIKEY=<api-key> ./bin/cake setup webhook_unregister
+```
+```bash
+$ TELEGRAM_APIKEY=<api-key> DATABASE_URL=<database-url> ./bin/cake multicast_message "<message>"
 ```
 
 ## Authors
