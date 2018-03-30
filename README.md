@@ -1,8 +1,7 @@
 # Events Arranger and Tracker Bot
 
-[![Build Status](https://img.shields.io/travis/cakephp/app/master.svg?style=flat-square)](https://travis-ci.org/cakephp/app)
-[![License](https://img.shields.io/packagist/l/cakephp/app.svg?style=flat-square)](https://packagist.org/packages/cakephp/app)
-
+[![Build Status](https://img.shields.io/travis/dmromanov/telegram-eant-bot/master.svg?style=flat-square)](https://travis-ci.org/dmromanov/telegram-eant-bot)
+[![GitHub license](https://img.shields.io/github/license/dmromanov/telegram-eant-bot.svg)](https://github.com/dmromanov/telegram-eant-bot/blob/master/LICENSE)
 
 ## Installation
 
@@ -16,8 +15,12 @@ composer install
 Read and edit `config/app.php` and setup the `'Datasources'` and any other
 configuration relevant for your application.
 
-## Authors
+Environment variables:
 
+* `TELEGRAM_APIKEY`
+* `DATABASE_URL`
+
+## Authors
 
 Dmitrii Romanov — the idea author and a developer dmitrii.romanov@firstlinesoftware.com 
 Anton Sipin — QA anton.sipin@firstlinesoftware.com
