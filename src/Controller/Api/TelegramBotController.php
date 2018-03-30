@@ -23,15 +23,6 @@ use Twig\Template;
 class TelegramBotController extends AppController
 {
     /**
-     * @var array
-     */
-    protected $methodsMap = [
-        '/new' => 'commandNewEvent',
-        '/start' => 'commandStart',
-        '/userstats' => 'commandUserstats',
-    ];
-
-    /**
      * @param Event $event
      *
      * @return \Cake\Http\Response|null|void
@@ -79,14 +70,10 @@ class TelegramBotController extends AppController
             ]);
             $this->Chats->save($chat);
 
-            if (empty($this->methodsMap[$command])) {
-                throw new BadRequestException(__('Unknown command'));
-            }
-
-            $method = $this->methodsMap[$command];
+            $method = sprintf('command%s', ucfirst(ltrim($command, '/')));
 
             if (!is_callable([$this, $method])) {
-                throw new InternalErrorException(__('Command handler does not exist'));
+                throw new BadRequestException(__('Command handler does not exist'));
             }
 
             \App\Api\TelegramApi::request(
