@@ -93,7 +93,12 @@ class SetupShell extends Shell
                 'url' => sprintf('https://%s/api/telegram-bot/webhook/%s', $domain, $this->param('apiKey')),
             //                'certificate' => $certificate->handle,
                 'max_connections' => $maxConnections,
-            //            'allowed_updates' => ['message']
+                'allowed_updates' => [
+//                    'message',
+//                    'edited_message',
+//                    'channel_post',
+//                    'edited_channel_post',
+                ]
             ]
         );
         var_export($result);

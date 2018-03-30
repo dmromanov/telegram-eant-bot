@@ -5,8 +5,14 @@ namespace App\Api;
 use Cake\Core\Configure;
 use Cake\Log\Log;
 use Cake\Log\LogTrait;
+use Cake\Network\Exception\ForbiddenException;
 use Cake\Network\Http\Client;
+use Psr\Log\LogLevel;
 
+/**
+ * Class TelegramApi
+ * @package App\Api
+ */
 class TelegramApi
 {
     use LogTrait;
@@ -33,8 +39,12 @@ class TelegramApi
 
         $data = $response->body('json_decode');
 
+        if ($response->getStatusCode() === 403) {
+            throw new ForbiddenException();
+        }
+
         if (!$response->isOk()) {
-            var_dump($data);
+            Log::error(print_r($data, true));
             throw new \RuntimeException(sprintf(__('Telegram responded error: "%s"'), $data->description), 502);
         }
 
@@ -43,5 +53,22 @@ class TelegramApi
         }
 
         return $data->result;
+    }
+
+    /**
+     * @param string $updateId
+     *
+     * @return bool
+     */
+    public static function storeUpdateId(string $updateId)
+    {
+        if ($updateId <= Configure::read('Telegram.update_id')) {
+            return false;
+        }
+
+        Configure::write('Telegram.update_id', $updateId);
+        Configure::dump('telegram', 'default', ['Telegram']);
+
+        return true;
     }
 }

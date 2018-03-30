@@ -23,6 +23,7 @@ class Chat extends Entity
      * @var array
      */
     protected $_accessible = [
+        'id' => true,
         'created' => true,
         'modified' => true
     ];

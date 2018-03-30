@@ -3,11 +3,16 @@ namespace App\Shell;
 
 use App\Api\TelegramApi;
 use App\Model\Table\ChatsTable;
+use Cake\Collection\Iterator\ExtractIterator;
 use Cake\Console\Shell;
+use Cake\Network\Exception\ForbiddenException;
+use Cake\Shell\Helper\ProgressHelper;
+use Psr\Log\LogLevel;
+use Symfony\Component\Console\Helper\ProgressBar;
 
 /**
  * MulticastMessage shell command.
- * @property ChatsTable $chats
+ * @property ChatsTable $Chats
  */
 class MulticastMessageShell extends Shell
 {
@@ -43,25 +48,43 @@ class MulticastMessageShell extends Shell
     public function main(string $message)
     {
         $this->loadModel('Chats');
+        /** @var ExtractIterator $chats */
         $chats = $this->Chats
             ->find()
             ->extract('id');
 
-        foreach ($chats as $chatId) {
-            $this->out(__('Sending a message to <info>{chatId}</info>', [
-                'chatId' => $chatId,
-            ]));
+        $this->helper('Progress')->output([
+            'total' => iterator_count($chats),
+            'callback' => function (ProgressHelper $progress) use ($chats, $message) {
 
-            $result = TelegramApi::request(
-                env('TELEGRAM_APIKEY'),
-                'sendMessage',
-                [
-                    'chat_id' => $chatId,
-                    'parse_mode' => 'Markdown',
-                    'text' => $message,
-                ]
-            );
-        }
+                // multicasting
+                foreach ($chats as $chatId) {
+                    $this->log(__('Sending a message to {chatId}', [
+                        'chatId' => $chatId,
+                    ]), LogLevel::INFO);
+
+                    try {
+                        $result = TelegramApi::request(
+                            env('TELEGRAM_APIKEY'),
+                            'sendMessage',
+                            [
+                                'chat_id' => $chatId,
+                                'parse_mode' => 'Markdown',
+                                'text' => $message,
+                            ]
+                        );
+                    } catch (ForbiddenException $e) {
+                        $this->log(__('I no longer have an access to that chat, removing.'), LogLevel::INFO);
+                        $this->Chats->delete($this->Chats->get($chatId));
+                    }
+
+                    $progress->increment(1);
+                    $progress->draw();
+                }
+
+            }
+        ]);
+
 
         $this->success(__('Done.'));
 
