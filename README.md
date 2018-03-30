@@ -20,8 +20,14 @@ Environment variables:
 * `TELEGRAM_APIKEY`
 * `DATABASE_URL`
 
+Register the bot in Telegram:
+
+```bash
+$ TELEGRAM_APIKEY=<api-key> ./bin/cake setup webhook_register <domain> <ssl-certificate> <max-requests>
+```
+
 ## Authors
 
-Dmitrii Romanov — the idea author and a developer dmitrii.romanov@firstlinesoftware.com 
+Dmitrii Romanov — the idea author and the main developer dmitrii.romanov@firstlinesoftware.com 
 Anton Sipin — QA anton.sipin@firstlinesoftware.com
 Yury Chernyatin — Developer

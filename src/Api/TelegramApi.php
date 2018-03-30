@@ -3,25 +3,38 @@
 namespace App\Api;
 
 use Cake\Core\Configure;
+use Cake\Log\Log;
+use Cake\Log\LogTrait;
 use Cake\Network\Http\Client;
 
 class TelegramApi
 {
+    use LogTrait;
 
     /**
+     * @param string $apiKey
      * @param string $method
      * @param array $payload
+     *
+     * @return
      */
-    public static function request(string $method, array $payload = [])
+    public static function request(string $apiKey, string $method, array $payload = [])
     {
-        $url = sprintf('https://api.telegram.org/bot%s/', Configure::read('Telegram.key'));
+        $url = sprintf('https://api.telegram.org/bot%s/', $apiKey);
+
         $api = new Client();
-        $response = $api->post($url . $method, $payload);
+
+        $url = $url . $method;
+
+        Log::debug(__('Sending a request to: {url}', [
+            'url' => $url,
+        ]));
+        $response = $api->post($url, $payload);
 
         $data = $response->body('json_decode');
 
         if (!$response->isOk()) {
-            sleep(10);
+            var_dump($data);
             throw new \RuntimeException(sprintf(__('Telegram responded error: "%s"'), $data->description), 502);
         }
 

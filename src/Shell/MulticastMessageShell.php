@@ -52,11 +52,15 @@ class MulticastMessageShell extends Shell
                 'chatId' => $chatId,
             ]));
 
-            $result = TelegramApi::request('sendMessage', [
-                'chat_id' => $chatId,
-                'parse_mode' => 'Markdown',
-                'text' => $message,
-            ]);
+            $result = TelegramApi::request(
+                env('TELEGRAM_APIKEY'),
+                'sendMessage',
+                [
+                    'chat_id' => $chatId,
+                    'parse_mode' => 'Markdown',
+                    'text' => $message,
+                ]
+            );
         }
 
         $this->success(__('Done.'));
