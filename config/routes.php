@@ -43,6 +43,15 @@ use Cake\Routing\Route\DashedRoute;
  */
 Router::defaultRouteClass(DashedRoute::class);
 
+Router::prefix('api', function (RouteBuilder $routes) {
+    $routes->setExtensions(['json']);
+    // All routes here will be prefixed with `/admin`
+    // And have the prefix => admin route element added.
+    $routes->resources('TelegramBot', [
+    ]);
+    $routes->fallbacks(DashedRoute::class);
+});
+;
 Router::scope('/', function (RouteBuilder $routes) {
     /**
      * Here, we are connecting '/' (base path) to a controller called 'Pages',
