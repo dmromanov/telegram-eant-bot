@@ -25,7 +25,8 @@
         "cakephp/cakephp": "3.5.*",
         "cakephp/migrations": "^1.0",
         "cakephp/plugin-installer": "^1.0",
-        "josegonzalez/dotenv": "2.*"
+        "josegonzalez/dotenv": "2.*",
+        "phpunit/phpunit": "^6.5"
     },
     "require-dev": {
         "cakephp/bake": "^1.1",
