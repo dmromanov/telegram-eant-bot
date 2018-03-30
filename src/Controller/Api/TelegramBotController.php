@@ -148,4 +148,25 @@ class TelegramBotController extends AppController
             ]
         );
     }
+
+    /**
+     * @param string $updateId
+     * @param string $chatId
+     */
+    protected function commandHelp(string $updateId, string $chatId)
+    {
+        $this->log(__('Processing "/help" command'), LogLevel::DEBUG);
+
+        $message = file_get_contents(APP . 'Template/Commands/help.markdown');
+
+        $response = \App\Api\TelegramApi::request(
+            env('TELEGRAM_APIKEY'),
+            'sendMessage',
+            [
+                'chat_id' => $chatId,
+                'parse_mode' => 'Markdown',
+                'text' => $message,
+            ]
+        );
+    }
 }
