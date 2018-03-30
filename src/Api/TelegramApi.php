@@ -5,13 +5,15 @@ namespace App\Api;
 use Cake\Core\Configure;
 use Cake\Network\Http\Client;
 
-class TelegramApi {
+class TelegramApi
+{
 
     /**
-     * @param string $apiName
+     * @param string $method
      * @param array $payload
      */
-    public static function request(string $method, array $payload = []) {
+    public static function request(string $method, array $payload = [])
+    {
         $url = sprintf('https://api.telegram.org/bot%s/', Configure::read('Telegram.key'));
         $api = new Client();
         $response = $api->post($url . $method, $payload);

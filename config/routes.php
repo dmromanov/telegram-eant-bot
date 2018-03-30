@@ -51,7 +51,7 @@ Router::prefix('api', function (RouteBuilder $routes) {
     ]);
     $routes->fallbacks(DashedRoute::class);
 });
-;
+
 Router::scope('/', function (RouteBuilder $routes) {
     /**
      * Here, we are connecting '/' (base path) to a controller called 'Pages',
