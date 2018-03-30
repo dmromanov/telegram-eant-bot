@@ -40,6 +40,7 @@ class TelegramApi
         $data = $response->body('json_decode');
 
         if ($response->getStatusCode() === 403) {
+            Log::error(print_r($data, true));
             throw new ForbiddenException();
         }
 

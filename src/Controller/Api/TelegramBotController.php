@@ -11,6 +11,7 @@ use Cake\Event\Event;
 use Cake\Network\Exception\BadRequestException;
 use Cake\Network\Exception\ForbiddenException;
 use Cake\Network\Exception\InternalErrorException;
+use Cake\View\View;
 use Psr\Log\LogLevel;
 use Twig\Template;
 
@@ -70,7 +71,8 @@ class TelegramBotController extends AppController
             ]);
             $this->Chats->save($chat);
 
-            $method = sprintf('command%s', ucfirst(ltrim($command, '/')));
+            list($firstPart, $arguments) = explode(' ', $command, 2);
+            $method = sprintf('command%s', ucfirst(ltrim($firstPart, '/')));
 
             if (!is_callable([$this, $method])) {
                 throw new BadRequestException(__('Command handler does not exist'));
@@ -85,7 +87,7 @@ class TelegramBotController extends AppController
                 ]
             );
 
-            $this->$method($update['update_id'], $update['message']['chat']['id']);
+            $this->$method($update['update_id'], $update['message']['chat']['id'], $arguments);
         } catch (ForbiddenException $e) {
             $this->Chats->delete($this->Chats->get($update['message']['chat']['id']));
         } catch (BadRequestException $e) {
@@ -123,7 +125,7 @@ class TelegramBotController extends AppController
     {
         $this->log(__('Processing "/start" command'), LogLevel::DEBUG);
 
-        $message = file_get_contents(APP . 'Template/Commands/start.markdown');
+        $message = $this->renderTemplate('start');
 
         $response = \App\Api\TelegramApi::request(
             env('TELEGRAM_APIKEY'),
@@ -144,7 +146,7 @@ class TelegramBotController extends AppController
     {
         $this->log(__('Processing "/help" command'), LogLevel::DEBUG);
 
-        $message = file_get_contents(APP . 'Template/Commands/help.markdown');
+        $message = $this->renderTemplate('help');
 
         $response = \App\Api\TelegramApi::request(
             env('TELEGRAM_APIKEY'),
@@ -155,5 +157,36 @@ class TelegramBotController extends AppController
                 'text' => $message,
             ]
         );
+    }
+
+    /**
+     * @param string $updateId
+     * @param string $chatId
+     */
+    protected function commandNew(string $updateId, string $chatId, string $argument = '')
+    {
+        $this->log(__('Processing "/new" command'), LogLevel::DEBUG);
+
+        $message = $this->renderTemplate('new', $argument);
+
+        $response = \App\Api\TelegramApi::request(
+            env('TELEGRAM_APIKEY'),
+            'sendMessage',
+            [
+                'chat_id' => $chatId,
+                'parse_mode' => 'Markdown',
+                'text' => $message,
+            ]
+        );
+    }
+
+    private function renderTemplate(string $template, string $message = ''): string {
+
+        $view = new View($this->request, $this->response, $this->getEventManager());
+        $view->enableAutoLayout(false);
+        $view->setTemplatePath('Commands');
+        $view->setTemplate(sprintf('%s.markdown', $template));
+        $view->set('message', $message);
+        return $view->render();
     }
 }
