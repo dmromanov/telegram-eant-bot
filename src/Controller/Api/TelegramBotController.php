@@ -205,49 +205,12 @@ class TelegramBotController extends AppController
 
             $response = $callback['data'];
 
-//            $this->loadModel('Votes');
-//            $vote = $this->Votes->newEntity([
-//                'id' => Text::uuid(),
-//                'chat_id' => $chat->id,
-//                'user_id' => $user->id,
-//                'vote' => $response,
-//            ]);
-//            $result = $this->Votes->save($vote);
-//            if (!$result) {
-//                throw new ValidationException($vote);
-//            }
-
-//            $this->loadModel('Events');
-//            /** @var Event $event */
-//            $event = $this->Events->find()
-//                ->where([
-//                    'chat_id' => $chat->id,
-//                    'id_message' => $callback['message']['message_id'],
-//                ])
-//                ->contain([
-//                    'Votes'
-//                ])
-//                ->first();
-
-//            $this->log(print_r($event, true));
-
             $text = $this->renderTemplate('new', [
                 'message' => $callback['message']['text'],
                 'user' => $user,
                 'chat' => $chat,
 //                'votes' => $event->votes
             ]);
-
-//            $response = \App\Api\TelegramApi::request(
-//                env('TELEGRAM_APIKEY'),
-//                'editMessageText',
-//                [
-//                    'chat_id' => $chat->id,
-//                    'parse_mode' => 'Markdown',
-//                    'message_id' => $callback['message']['message_id'],
-//                    'text' => $text,
-//                ]
-//            );
 
         } catch (ForbiddenException $e) {
             $this->Chats->delete($this->Chats->get($callback['chat']['id']));
@@ -313,19 +276,6 @@ class TelegramBotController extends AppController
     protected function commandNew(string $template, Chat $chat, User $user, $arg = '')
     {
         // TODO: suggest title if $arg is not set
-
-//        $this->loadModel('Events');
-//        $event = $this->Events->newEntity([
-//            'id' => Text::uuid(), // FIXME: should be set automatically when inserting
-//            'chat_id' => $chat->id,
-//            'author_id' => $user->id,
-//            'title' => $arg,
-//            'datetime' => null,
-//            'min_responses' => 0,
-//            'geopoint' => null
-//        ]);
-//        $this->log(print_r($this->Events, true));
-//        $this->Events->save($event);
 
         $message = $this->renderTemplate($template, [
             'message' => $arg,
