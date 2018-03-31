@@ -265,7 +265,9 @@ class TelegramBotController extends AppController
      */
     protected function commandHelp(string $template, Chat $chat, User $user)
     {
-        $message = $this->renderTemplate($template);
+        $message = $this->renderTemplate($template, [
+            'is_private' => $chat->type === 'private',
+        ]);
 
         $response = \App\Api\TelegramApi::request(
             env('TELEGRAM_APIKEY'),
