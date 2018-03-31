@@ -6,14 +6,11 @@ use App\Api\TelegramApi;
 use App\Api\TelegramException;
 use App\Controller\AppController;
 use App\Model\Table\ChatsTable;
-use Cake\Core\Configure;
 use Cake\Event\Event;
 use Cake\Network\Exception\BadRequestException;
 use Cake\Network\Exception\ForbiddenException;
-use Cake\Network\Exception\InternalErrorException;
 use Cake\View\View;
 use Psr\Log\LogLevel;
-use Twig\Template;
 
 /**
  * Class TelegramBotController
@@ -71,8 +68,14 @@ class TelegramBotController extends AppController
             ]);
             $this->Chats->save($chat);
 
-            list($firstPart, $arguments) = explode(' ', $command, 2);
-            $method = sprintf('command%s', ucfirst(ltrim($firstPart, '/')));
+            if (strpos($command, '@') !== false) {
+                list($command) = explode('@', $command, 2);
+            }
+            if (strpos($command, ' ') !== false) {
+                list($command, $arguments) = explode(' ', $command, 2);
+            }
+
+            $method = sprintf('command%s', ucfirst(ltrim($command, '/')));
 
             if (!is_callable([$this, $method])) {
                 throw new BadRequestException(__('Command handler does not exist'));
@@ -163,7 +166,7 @@ class TelegramBotController extends AppController
      * @param string $updateId
      * @param string $chatId
      */
-    protected function commandNew(string $updateId, string $chatId, string $argument = '')
+    protected function commandNew(string $updateId, string $chatId, $argument = '')
     {
         $this->log(__('Processing "/new" command'), LogLevel::DEBUG);
 
