@@ -103,10 +103,10 @@ class SetupShell extends Shell
             //                'certificate' => $certificate->handle,
                 'max_connections' => $maxConnections,
                 'allowed_updates' => [
-//                    'message',
-//                    'edited_message',
-//                    'channel_post',
-//                    'edited_channel_post',
+            //                    'message',
+            //                    'edited_message',
+            //                    'channel_post',
+            //                    'edited_channel_post',
                 ]
             ]
         );
@@ -140,7 +140,7 @@ class SetupShell extends Shell
         // TODO: get all tables from schema and iterate over it.
 
         $this->loadModel('Chats');
-        $this->Chats->getConnection()->transactional(function($conn) {
+        $this->Chats->getConnection()->transactional(function ($conn) {
             $sqls = $this->Chats->getSchema()->truncateSql($this->Chats->getConnection());
             foreach ($sqls as $sql) {
                 $this->Chats->getConnection()->execute($sql)->execute();

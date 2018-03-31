@@ -3,6 +3,8 @@
 [![Build Status](https://img.shields.io/travis/dmromanov/telegram-eant-bot/master.svg?style=flat-square)](https://travis-ci.org/dmromanov/telegram-eant-bot)
 [![GitHub license](https://img.shields.io/github/license/dmromanov/telegram-eant-bot.svg)](https://github.com/dmromanov/telegram-eant-bot/blob/master/LICENSE)
 
+Add me to your Telegram: https://t.me/eant_bot
+
 ## Installation
 
 Clone this repository and run 

@@ -4,17 +4,19 @@ namespace App\Model\Entity;
 use Cake\ORM\Entity;
 
 /**
- * Chat Entity
+ * Vote Entity
  *
- * @property string $id
- * @property string $type
+ * @property int $id
+ * @property string $user_id
+ * @property string $event_id
+ * @property bool $vote
  * @property \Cake\I18n\FrozenTime $created
  * @property \Cake\I18n\FrozenTime $modified
  *
- * @property \App\Model\Entity\Event[] $events
- * @property \App\Model\Entity\User[] $users
+ * @property \App\Model\Entity\User $user
+ * @property \App\Model\Entity\Event $event
  */
-class Chat extends Entity
+class Vote extends Entity
 {
 
     /**
@@ -27,10 +29,12 @@ class Chat extends Entity
      * @var array
      */
     protected $_accessible = [
-        'type' => true,
+        'user_id' => true,
+        'event_id' => true,
+        'vote' => true,
         'created' => true,
         'modified' => true,
-        'events' => true,
-        'users' => true
+        'user' => true,
+        'event' => true
     ];
 }

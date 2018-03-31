@@ -9,6 +9,9 @@ use Cake\Validation\Validator;
 /**
  * Chats Model
  *
+ * @property \App\Model\Table\EventsTable|\Cake\ORM\Association\HasMany $Events
+ * @property \App\Model\Table\UsersTable|\Cake\ORM\Association\HasMany $Users
+ *
  * @method \App\Model\Entity\Chat get($primaryKey, $options = [])
  * @method \App\Model\Entity\Chat newEntity($data = null, array $options = [])
  * @method \App\Model\Entity\Chat[] newEntities(array $data, array $options = [])
@@ -37,6 +40,13 @@ class ChatsTable extends Table
         $this->setPrimaryKey('id');
 
         $this->addBehavior('Timestamp');
+
+        $this->hasMany('Events', [
+            'foreignKey' => 'chat_id'
+        ]);
+        $this->hasMany('Users', [
+            'foreignKey' => 'chat_id'
+        ]);
     }
 
     /**
@@ -51,6 +61,11 @@ class ChatsTable extends Table
             ->scalar('id')
             ->maxLength('id', 500)
             ->allowEmpty('id', 'create');
+
+        $validator
+            ->scalar('type')
+            ->maxLength('type', 50)
+            ->allowEmpty('type');
 
         return $validator;
     }

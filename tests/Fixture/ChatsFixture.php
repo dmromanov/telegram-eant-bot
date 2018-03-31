@@ -18,6 +18,7 @@ class ChatsFixture extends TestFixture
     // @codingStandardsIgnoreStart
     public $fields = [
         'id' => ['type' => 'string', 'length' => 500, 'null' => false, 'default' => null, 'collate' => 'utf8mb4_unicode_ci', 'comment' => '', 'precision' => null, 'fixed' => null],
+        'type' => ['type' => 'string', 'length' => 50, 'null' => true, 'default' => null, 'collate' => 'utf8mb4_unicode_ci', 'comment' => '', 'precision' => null, 'fixed' => null],
         'created' => ['type' => 'datetime', 'length' => null, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null],
         'modified' => ['type' => 'datetime', 'length' => null, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null],
         '_constraints' => [
@@ -37,9 +38,10 @@ class ChatsFixture extends TestFixture
      */
     public $records = [
         [
-            'id' => 'f946315f-c972-4ce4-9c00-1872b0e42ff5',
-            'created' => '2018-03-30 19:41:02',
-            'modified' => '2018-03-30 19:41:02'
+            'id' => '09e6fc02-f520-452f-8893-904a655e34c3',
+            'type' => 'Lorem ipsum dolor sit amet',
+            'created' => '2018-03-31 14:56:18',
+            'modified' => '2018-03-31 14:56:18'
         ],
     ];
 }

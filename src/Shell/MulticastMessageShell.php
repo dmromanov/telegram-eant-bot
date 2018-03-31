@@ -81,10 +81,8 @@ class MulticastMessageShell extends Shell
                     $progress->increment(1);
                     $progress->draw();
                 }
-
             }
         ]);
-
 
         $this->success(__('Done.'));
 

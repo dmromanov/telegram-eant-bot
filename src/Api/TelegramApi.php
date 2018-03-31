@@ -32,10 +32,13 @@ class TelegramApi
 
         $url = $url . $method;
 
-        Log::debug(__('Sending a request to: {url}', [
+        Log::debug(__('Sending a request to: {url}; Payload: {payload}', [
             'url' => $url,
+            'payload' => print_r($payload, true),
         ]));
-        $response = $api->post($url, $payload);
+        $response = $api->post($url, $payload, [
+            'type' => 'json'
+        ]);
 
         $data = $response->body('json_decode');
 

@@ -1,22 +1,22 @@
 <?php
 namespace App\Test\TestCase\Model\Table;
 
-use App\Model\Table\ChatsTable;
+use App\Model\Table\VotesTable;
 use Cake\ORM\TableRegistry;
 use Cake\TestSuite\TestCase;
 
 /**
- * App\Model\Table\ChatsTable Test Case
+ * App\Model\Table\VotesTable Test Case
  */
-class ChatsTableTest extends TestCase
+class VotesTableTest extends TestCase
 {
 
     /**
      * Test subject
      *
-     * @var \App\Model\Table\ChatsTable
+     * @var \App\Model\Table\VotesTable
      */
-    public $Chats;
+    public $Votes;
 
     /**
      * Fixtures
@@ -24,10 +24,10 @@ class ChatsTableTest extends TestCase
      * @var array
      */
     public $fixtures = [
-        'app.chats',
-        'app.events',
+        'app.votes',
         'app.users',
-        'app.votes'
+        'app.chats',
+        'app.events'
     ];
 
     /**
@@ -38,8 +38,8 @@ class ChatsTableTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $config = TableRegistry::exists('Chats') ? [] : ['className' => ChatsTable::class];
-        $this->Chats = TableRegistry::get('Chats', $config);
+        $config = TableRegistry::exists('Votes') ? [] : ['className' => VotesTable::class];
+        $this->Votes = TableRegistry::get('Votes', $config);
     }
 
     /**
@@ -49,7 +49,7 @@ class ChatsTableTest extends TestCase
      */
     public function tearDown()
     {
-        unset($this->Chats);
+        unset($this->Votes);
 
         parent::tearDown();
     }
@@ -70,6 +70,16 @@ class ChatsTableTest extends TestCase
      * @return void
      */
     public function testValidationDefault()
+    {
+        $this->markTestIncomplete('Not implemented yet.');
+    }
+
+    /**
+     * Test buildRules method
+     *
+     * @return void
+     */
+    public function testBuildRules()
     {
         $this->markTestIncomplete('Not implemented yet.');
     }
