@@ -96,18 +96,20 @@ class TelegramBotController extends AppController
      */
     protected function messageHandler(array $message)
     {
+            $argument = '';
             $command = $message['text'];
 
             if (strpos($command, '@') !== false) {
                 list($command) = explode('@', $command, 2);
             }
             if (strpos($command, ' ') !== false) {
-                list($command, $arguments) = explode(' ', $command, 2);
+                list($command, $argument) = explode(' ', $command, 2);
             }
 
             $method = sprintf('command%s', Inflector::camelize(ucfirst(ltrim($command, '/'))));
             $template = ltrim($command, '/');
 
+        try {
             if (!is_callable([$this, $method])) {
                 throw new BadRequestException(__('Command handler does not exist'));
             }
@@ -141,10 +143,11 @@ class TelegramBotController extends AppController
 
                     return $user;
                 });
-
-            $this->Users->save($user);
-
-        try {
+            $user->last_activity = new FrozenTime();
+            $result = $this->Users->save($user);
+            if (!$result) {
+                throw new ValidationException($user);
+            }
             \App\Api\TelegramApi::request(
                 env('TELEGRAM_APIKEY'),
                 'sendChatAction',
@@ -154,7 +157,7 @@ class TelegramBotController extends AppController
                 ]
             );
 
-            $this->$method($template, $chat, $user, $arguments);
+            $this->$method($template, $chat, $user, $argument);
         } catch (ForbiddenException $e) {
             $this->Chats->delete($this->Chats->get($message['chat']['id']));
         } catch (BadRequestException $e) {
@@ -204,6 +207,14 @@ class TelegramBotController extends AppController
             }
 
             $response = $callback['data'];
+            if ($response) {
+                $this->loadModel('Users');
+                $user->last_activity = new FrozenTime();
+                $result = $this->Users->save($user);
+                if (!$result) {
+                    throw new ValidationException($user);
+                }
+            }
 
             $text = $this->renderTemplate('new', [
                 'message' => $callback['message']['text'],
@@ -300,6 +311,14 @@ class TelegramBotController extends AppController
                 ]),
             ]
         );
+
+        // updating stats
+        $this->loadModel('Users');
+        $user->organized_events = $user->organized_events +1;
+        $result = $this->Users->save($user);
+        if (!$result) {
+            throw new ValidationException($user);
+        }
     }
 
     /**
@@ -309,7 +328,26 @@ class TelegramBotController extends AppController
      */
     protected function commandUserstats(string $template, Chat $chat, User $user)
     {
-        $message = $this->renderTemplate($template);
+        $reportingDate = new FrozenTime('-3 months');
+        $this->loadModel('Users');
+
+        $activists = $this->Users->find()
+            ->where([
+                'chat_id' => $chat->id,
+                'organized_events >' => 0,
+            ])
+            ->all();
+        $inactive = $this->Users->find()
+            ->where([
+                'chat_id' => $chat->id,
+                'last_activity <' => $reportingDate,
+            ])
+            ->all();
+
+        $message = $this->renderTemplate($template, [
+            'activists' => $activists,
+            'inactive' => $inactive,
+        ]);
 
         $response = \App\Api\TelegramApi::request(
             env('TELEGRAM_APIKEY'),
