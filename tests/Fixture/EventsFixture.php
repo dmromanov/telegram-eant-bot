@@ -28,8 +28,8 @@ class EventsFixture extends TestFixture
         'created' => ['type' => 'datetime', 'length' => null, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null],
         'modified' => ['type' => 'datetime', 'length' => null, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null],
         '_indexes' => [
-            'chat_id' => ['type' => 'index', 'columns' => ['chat_id'], 'length' => []],
-            'author_id' => ['type' => 'index', 'columns' => ['author_id'], 'length' => []],
+            'events_chat_id' => ['type' => 'index', 'columns' => ['chat_id'], 'length' => []],
+            'events_author_id' => ['type' => 'index', 'columns' => ['author_id'], 'length' => []],
         ],
         '_constraints' => [
             'primary' => ['type' => 'primary', 'columns' => ['id'], 'length' => []],

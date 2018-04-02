@@ -29,7 +29,7 @@ class UsersFixture extends TestFixture
         'created' => ['type' => 'datetime', 'length' => null, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null],
         'modified' => ['type' => 'datetime', 'length' => null, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null],
         '_indexes' => [
-            'chat_id' => ['type' => 'index', 'columns' => ['chat_id'], 'length' => []],
+            'users_chat_id' => ['type' => 'index', 'columns' => ['chat_id'], 'length' => []],
         ],
         '_constraints' => [
             'primary' => ['type' => 'primary', 'columns' => ['id'], 'length' => []],

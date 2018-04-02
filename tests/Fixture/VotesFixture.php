@@ -24,8 +24,8 @@ class VotesFixture extends TestFixture
         'created' => ['type' => 'datetime', 'length' => null, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null],
         'modified' => ['type' => 'datetime', 'length' => null, 'null' => false, 'default' => null, 'comment' => '', 'precision' => null],
         '_indexes' => [
-            'user_id' => ['type' => 'index', 'columns' => ['user_id'], 'length' => []],
-            'event_id' => ['type' => 'index', 'columns' => ['event_id'], 'length' => []],
+            'votes_user_id' => ['type' => 'index', 'columns' => ['user_id'], 'length' => []],
+            'votes_event_id' => ['type' => 'index', 'columns' => ['event_id'], 'length' => []],
         ],
         '_constraints' => [
             'primary' => ['type' => 'primary', 'columns' => ['id'], 'length' => []],
