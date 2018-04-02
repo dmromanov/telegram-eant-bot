@@ -47,8 +47,7 @@ Router::prefix('api', function (RouteBuilder $routes) {
     $routes->setExtensions(['json']);
     // All routes here will be prefixed with `/admin`
     // And have the prefix => admin route element added.
-    $routes->resources('TelegramBot', [
-    ]);
+    $routes->resources('TelegramBot');
     $routes->fallbacks(DashedRoute::class);
 });
 

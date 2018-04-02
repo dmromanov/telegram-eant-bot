@@ -10,3 +10,6 @@ require dirname(__DIR__) . '/vendor/autoload.php';
 require dirname(__DIR__) . '/config/bootstrap.php';
 
 $_SERVER['PHP_SELF'] = '/';
+
+\Cake\Routing\DispatcherFactory::add('Routing');
+\Cake\Routing\DispatcherFactory::add('ControllerFactory');
