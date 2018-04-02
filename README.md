@@ -49,4 +49,4 @@ $ TELEGRAM_APIKEY=<api-key> DATABASE_URL=<database-url> ./bin/cake setup clean_d
 
 * Dmitrii Romanov — the idea author and the main developer dmitrii.romanov@firstlinesoftware.com 
 * Anton Sipin — QA
-* Yury Chernyatin — Developer
+* Yury Chernyatin — Additional support
