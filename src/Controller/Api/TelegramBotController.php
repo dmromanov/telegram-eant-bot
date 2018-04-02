@@ -70,8 +70,7 @@ class TelegramBotController extends AppController
         try {
             if (isset($update['message'])) {
                 $this->messageHandler($update['message']);
-            }
-            elseif (isset($update['callback_query'])) {
+            } elseif (isset($update['callback_query'])) {
                 $this->callbackHandler($update['callback_query']);
             }
         } catch (\Exception $e) {
@@ -99,12 +98,12 @@ class TelegramBotController extends AppController
             $argument = '';
             $command = $message['text'];
 
-            if (strpos($command, '@') !== false) {
-                list($command) = explode('@', $command, 2);
-            }
-            if (strpos($command, ' ') !== false) {
-                list($command, $argument) = explode(' ', $command, 2);
-            }
+        if (strpos($command, '@') !== false) {
+            list($command) = explode('@', $command, 2);
+        }
+        if (strpos($command, ' ') !== false) {
+            list($command, $argument) = explode(' ', $command, 2);
+        }
 
             $method = sprintf('command%s', Inflector::camelize(ucfirst(ltrim($command, '/'))));
             $template = ltrim($command, '/');
@@ -120,18 +119,21 @@ class TelegramBotController extends AppController
             );
 
             $this->loadModel('Chats');
-            $chat = $this->Chats->findOrCreate($this->Chats->findById($message['chat']['id']),
-                function(Chat $chat) use ($message) {
+            $chat = $this->Chats->findOrCreate(
+                $this->Chats->findById($message['chat']['id']),
+                function (Chat $chat) use ($message) {
                     $chat->id = $message['chat']['id'];
                     $chat->type = $message['chat']['type'];
 
                     return $chat;
-                });
+                }
+            );
             $this->Chats->save($chat);
 
             $this->loadModel('Users');
-            $user = $this->Users->findOrCreate($this->Users->findById($message['from']['id']),
-                function(User $user) use ($chat, $message) {
+            $user = $this->Users->findOrCreate(
+                $this->Users->findById($message['from']['id']),
+                function (User $user) use ($chat, $message) {
                     $this->log(print_r($user, true));
                     $user->id = $message['from']['id'];
                     $user->last_activity = new FrozenTime();
@@ -142,7 +144,8 @@ class TelegramBotController extends AppController
                     $user->is_bot = (bool)$message['from']['is_bot'];
 
                     return $user;
-                });
+                }
+            );
             $user->last_activity = new FrozenTime();
             $result = $this->Users->save($user);
             if (!$result) {
@@ -182,11 +185,13 @@ class TelegramBotController extends AppController
     {
         try {
             $this->loadModel('Chats');
-            $chat = $this->Chats->findOrCreate($this->Chats->findById($callback['message']['chat']['id']),
-                function(Chat $chat) {
+            $chat = $this->Chats->findOrCreate(
+                $this->Chats->findById($callback['message']['chat']['id']),
+                function (Chat $chat) {
 
                     return $chat;
-                });
+                }
+            );
             $chat->type = $callback['message']['chat']['type'];
             $this->Chats->save($chat);
 
@@ -222,7 +227,6 @@ class TelegramBotController extends AppController
                 'chat' => $chat,
 //                'votes' => $event->votes
             ]);
-
         } catch (ForbiddenException $e) {
             $this->Chats->delete($this->Chats->get($callback['chat']['id']));
         } catch (BadRequestException $e) {
@@ -304,19 +308,19 @@ class TelegramBotController extends AppController
                 'parse_mode' => 'Markdown',
                 'text' => $message,
                 'reply_markup' => json_encode([
-                    "inline_keyboard" => array(
-                        array(
-                            array("text" => "Y","callback_data" => 1,),
-                            array("text" => "N","callback_data" => -1,),
-                        ),
-                    ),
+                    "inline_keyboard" => [
+                        [
+                            ["text" => "Y", "callback_data" => 1, ],
+                            ["text" => "N", "callback_data" => -1, ],
+                        ],
+                    ],
                 ]),
             ]
         );
 
         // updating stats
         $this->loadModel('Users');
-        $user->organized_events = $user->organized_events +1;
+        $user->organized_events = $user->organized_events + 1;
         $result = $this->Users->save($user);
         if (!$result) {
             throw new ValidationException($user);
