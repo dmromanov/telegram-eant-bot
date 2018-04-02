@@ -22,6 +22,10 @@ before_script:
 
 script:
   - if [[ $PHPCS != 1 ]]; then vendor/bin/phpunit; fi
+  - if [[ $TRAVIS_PHP_VERSION = 7.0 ]]; then export CODECOVERAGE=1; vendor/bin/phpunit --coverage-clover=clover.xml; fi
+
+after_success:
+  - if [[ $TRAVIS_PHP_VERSION = 7.0 ]]; then bash <(curl -s https://codecov.io/bash); fi
 
 notifications:
   email: false
