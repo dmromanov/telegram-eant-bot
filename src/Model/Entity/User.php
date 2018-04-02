@@ -49,10 +49,17 @@ class User extends Entity
         'votes' => true
     ];
 
-    protected function _getFullName():string {
-        return Text::insert(':firstName :lastName', [
+    /**
+     * @return string
+     */
+    protected function _getFullName(): string
+    {
+        $parts = [
             'firstName' => $this->firstname,
             'lastName' => $this->lastname,
-        ]);
+        ];
+        $parts = array_filter($parts);
+
+        return implode(' ', $parts);
     }
 }
