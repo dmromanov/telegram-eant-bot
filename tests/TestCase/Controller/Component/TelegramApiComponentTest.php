@@ -51,4 +51,20 @@ class TelegramApiComponentTest extends TestCase
     {
         $this->markTestIncomplete('Not implemented yet.');
     }
+
+    public function testRequest() {
+        $this->markTestIncomplete();
+    }
+
+    public function testParse() {
+        $payload = '/new title @foobar';
+        $expected = ['/new', 'title @foobar'];
+        $result = $this->TelegramApi->parse($payload);
+        $this->assertSame($expected, $result);
+
+        $payload = '/new@eant_bot title @foobar';
+        $expected = ['/new', 'title @foobar'];
+        $result = $this->TelegramApi->parse($payload);
+        $this->assertSame($expected, $result);
+    }
 }

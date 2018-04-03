@@ -56,11 +56,11 @@ class VotesHelperTest extends TestCase
 
     public function testFormat()
     {
-        $expected = Vote::YES;
+        $expected = mb_strtolower(Vote::YES, 'utf-8');
         $result = $this->Votes->format(true);
         $this->assertSame($expected, $result);
 
-        $expected = Vote::NO;
+        $expected = mb_strtolower(Vote::NO, 'utf-8');
         $result = $this->Votes->format(false);
         $this->assertSame($expected, $result);
     }

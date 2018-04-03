@@ -77,13 +77,11 @@ class TelegramBotController extends AppController
             if (isset($update['message'])) {
                 $key = 'message';
 
-                $chatId = $update[$key]['chat']['id'];
                 $this->messageHandler($update[$key]);
 
             } elseif (isset($update['callback_query'])) {
                 $key = 'callback_query';
 
-                $chatId = $update[$key]['message']['chat']['id'];
                 $this->callbackHandler($update[$key]);
             }
         } catch (\Exception $e) {
@@ -107,15 +105,11 @@ class TelegramBotController extends AppController
      */
     protected function messageHandler(array $message)
     {
-        $argument = '';
-        $command = $message['text'];
+        if (!isset($message['text'])) {
+            throw new BadRequestException();
+        }
 
-        if (strpos($command, '@') !== false) {
-            list($command) = explode('@', $command, 2);
-        }
-        if (strpos($command, ' ') !== false) {
-            list($command, $argument) = explode(' ', $command, 2);
-        }
+        list($command, $argument) = $this->TelegramApi->parse($message['text']);
 
         $method = sprintf('command%s', Inflector::camelize(ucfirst(ltrim($command, '/'))));
         $template = ltrim($command, '/');
@@ -254,7 +248,7 @@ class TelegramBotController extends AppController
             ]);
             $response = $this->TelegramApi->request('editMessageText', [
                 'chat_id' => $chat->id,
-                'message_id' => $event->id_message +1,
+                'message_id' => $event->id_message,
                 'text' => $text,
                 'parse_mode' => 'Markdown',
                 'reply_markup' => $this->TelegramApi->getReplyKeyboard($event),
@@ -321,9 +315,12 @@ class TelegramBotController extends AppController
      * @param string $user
      * @param string $arg
      */
-    protected function commandNew(string $template, Chat $chat, User $user, $arg = '', $messageId = null)
+    protected function commandNew(string $template, Chat $chat, User $user, $arg = '')
     {
         // TODO: suggest title if $arg is not set
+        if (strlen($arg) === 0) {
+            $arg = PHP_EOL;
+        }
 
         $message = $this->renderTemplate($template,
             [
@@ -333,30 +330,40 @@ class TelegramBotController extends AppController
             ]);
 
         $this->loadModel('Events');
-        $event = $this->Events->newEntity([
-            'id' => Text::uuid(),
-            'chat_id' => $chat->id,
-            'author_id' => $user->id,
-            'id_message' => $messageId,
-            'title' => $arg,
-            'date' => new FrozenTime(),
-            'min_responses' => null,
-            'geopoint' => null,
-        ]);
-        $result = $this->Events->save($event);
-        if (!$result) {
-            throw new ValidationException($result);
-        }
 
-        $response = $this->TelegramApi->request(
-            'sendMessage',
-            [
+        $this->Events->getConnection()->transactional(function () use ($chat, $message, $user, $arg) {
+            $event = $this->Events->newEntity([
+                'id' => Text::uuid(),
                 'chat_id' => $chat->id,
-                'parse_mode' => 'Markdown',
-                'text' => $message,
-                'reply_markup' => $this->TelegramApi->getReplyKeyboard($event),
-            ]
-        );
+                'author_id' => $user->id,
+                'id_message' => null,
+                'title' => $arg,
+                'date' => new FrozenTime(),
+                'min_responses' => null,
+                'geopoint' => null,
+            ]);
+            $result = $this->Events->save($event);
+            if (!$result) {
+                $this->log(Debugger::exportVar($event->getErrors()));
+                throw new ValidationException($event);
+            }
+
+            $response = $this->TelegramApi->request(
+                'sendMessage',
+                [
+                    'chat_id' => $chat->id,
+                    'parse_mode' => 'Markdown',
+                    'text' => $message,
+                    'reply_markup' => $this->TelegramApi->getReplyKeyboard($event),
+                ]
+            );
+            $this->log(Debugger::exportVar($response->message_id));
+            $event->id_message = $response->message_id;
+            $result = $this->Events->save($event);
+            if (!$result) {
+                throw new ValidationException($event);
+            }
+        });
 
         // updating stats
         $this->loadModel('Users');

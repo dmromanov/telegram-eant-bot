@@ -3,6 +3,6 @@
 
 <?php if (!empty($votes)): ?>
 <?php foreach ($votes as $vote): ?>
-    <?= $vote->user->fullName?>: <?= $this->Votes->format($vote->vote); ?>
+    <?= $vote->user->fullName?>: <?= $this->Votes->format($vote->vote), PHP_EOL; ?>
 <?php endforeach; ?>
 <?php endif; ?>

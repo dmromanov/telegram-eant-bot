@@ -3,6 +3,7 @@
 namespace App\View\Helper;
 
 use App\Model\Entity\Vote;
+use Cake\Core\Configure;
 use Cake\View\Helper;
 use Cake\View\View;
 
@@ -26,7 +27,7 @@ class VotesHelper extends Helper
      */
     public function format(bool $bool): string
     {
-        return $bool ? Vote::YES : Vote::NO;
+        return mb_strtolower($bool ? Vote::YES : Vote::NO, 'utf-8');
     }
 
 }

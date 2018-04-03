@@ -70,8 +70,9 @@ class EventsTable extends Table
         $validator
             ->scalar('id_message')
             ->maxLength('id_message', 100)
-            ->requirePresence('id_message', 'create')
-            ->notEmpty('id_message');
+            ->allowEmpty('id_message', 'create')
+            ->requirePresence('id_message', 'update')
+            ->notEmpty('id_message', null,'update');
 
         $validator
             ->scalar('title')
