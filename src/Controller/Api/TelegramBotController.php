@@ -1,20 +1,25 @@
 <?php
 
-namespace App\Controller;
+namespace App\Controller\Api;
 
 use App\Api\TelegramApi;
 use App\Api\TelegramException;
+use App\Controller\AppController;
+use App\Controller\Component\TelegramApiComponent;
 use App\Model\Entity\Chat;
 use App\Model\Entity\User;
 use App\Model\Table\ChatsTable;
 use App\Model\Table\EventsTable;
 use App\Model\Table\UsersTable;
 use App\Model\Table\VotesTable;
+use Cake\Error\Debugger;
 use Cake\Event\Event;
 use Cake\I18n\FrozenTime;
 use Cake\Network\Exception\BadRequestException;
 use Cake\Network\Exception\ForbiddenException;
+use Cake\ORM\Query;
 use Cake\Utility\Inflector;
+use Cake\Utility\Text;
 use Cake\View\View;
 use JsonSchema\Exception\ValidationException;
 use Psr\Log\LogLevel;
@@ -27,6 +32,8 @@ use Psr\Log\LogLevel;
  * @property EventsTable $Events
  * @property UsersTable $Users
  * @property VotesTable $Votes
+ *
+ * @property TelegramApiComponent $TelegramApi
  */
 class TelegramBotController extends AppController
 {
@@ -40,6 +47,7 @@ class TelegramBotController extends AppController
         parent::beforeFilter($event);
 
         $this->loadComponent('RequestHandler');
+        $this->loadComponent('TelegramApi');
         $this->RequestHandler->accepts('json');
     }
 
@@ -57,7 +65,7 @@ class TelegramBotController extends AppController
         }
 
         $update = $this->request->getData();
-        $this->log(print_r($update, true), LogLevel::DEBUG);
+        $this->log(Debugger::exportVar($update), LogLevel::DEBUG);
 
         if (empty($update)) {
             throw new BadRequestException(__('Invalid input data provided'));
@@ -67,21 +75,27 @@ class TelegramBotController extends AppController
 
         try {
             if (isset($update['message'])) {
-                $this->messageHandler($update['message']);
+                $key = 'message';
+
+                $chatId = $update[$key]['chat']['id'];
+                $this->messageHandler($update[$key]);
+
             } elseif (isset($update['callback_query'])) {
-                $this->callbackHandler($update['callback_query']);
+                $key = 'callback_query';
+
+                $chatId = $update[$key]['message']['chat']['id'];
+                $this->callbackHandler($update[$key]);
             }
         } catch (\Exception $e) {
             $this->log($e, LogLevel::ERROR);
-            \App\Api\TelegramApi::request(
-                env('TELEGRAM_APIKEY'),
-                'sendMessage',
-                [
-                    'chat_id' => $update['message']['chat']['id'],
-                    'reply_to_message_id' => $update['message']['message_id'],
-                    'text' => file_get_contents(APP . 'Template/Commands/Errors/internal_error.markdown'),
-                ]
-            );
+//            $this->TelegramApi->request(
+//                'sendMessage',
+//                [
+//                    'chat_id' => $chatId,
+//                    'reply_to_message_id' => $update['message']['message_id'],
+//                    'text' => $this->renderTemplate('internal_error'),
+//                ]
+//            );
         }
 
         TelegramApi::storeUpdateId($update['update_id']);
@@ -132,7 +146,7 @@ class TelegramBotController extends AppController
             $user = $this->Users->findOrCreate(
                 $this->Users->findById($message['from']['id']),
                 function(User $user) use ($chat, $message) {
-                    $this->log(print_r($user, true));
+                    $this->log(\Cake\Error\Debugger::exportVar($user));
                     $user->id = $message['from']['id'];
                     $user->last_activity = new FrozenTime();
                     $user->chat_id = $chat->id;
@@ -149,8 +163,7 @@ class TelegramBotController extends AppController
             if (!$result) {
                 throw new ValidationException($user);
             }
-            \App\Api\TelegramApi::request(
-                env('TELEGRAM_APIKEY'),
+            $this->TelegramApi->request(
                 'sendChatAction',
                 [
                     'chat_id' => $message['chat']['id'],
@@ -158,20 +171,20 @@ class TelegramBotController extends AppController
                 ]
             );
 
-            $this->$method($template, $chat, $user, $argument);
+            $this->$method($template, $chat, $user, $argument, $message['message_id']);
         } catch (ForbiddenException $e) {
             $this->Chats->delete($this->Chats->get($message['chat']['id']));
         } catch (BadRequestException $e) {
             if (isset($message) && $message['chat']['type'] === 'private') {
-                \App\Api\TelegramApi::request(
-                    env('TELEGRAM_APIKEY'),
-                    'sendMessage',
-                    [
-                        'chat_id' => $message['chat']['id'],
-                        'reply_to_message_id' => $message['message_id'],
-                        'text' => file_get_contents(APP . 'Template/Commands/Errors/unknown_command.markdown'),
-                    ]
-                );
+//                $this->TelegramApi->request(
+//                    env('TELEGRAM_APIKEY'),
+//                    'sendMessage',
+//                    [
+//                        'chat_id' => $message['chat']['id'],
+//                        'reply_to_message_id' => $message['message_id'],
+//                        'text' => $this->renderTemplate('unknown_command'),
+//                    ]
+//                );
             }
         }
     }
@@ -182,61 +195,81 @@ class TelegramBotController extends AppController
     protected function callbackHandler(array $callback)
     {
         try {
+            list($eventId, $vote) = explode(':', $callback['data'], 2);
             $this->loadModel('Chats');
-            $chat = $this->Chats->findOrCreate(
-                $this->Chats->findById($callback['message']['chat']['id']),
-                function(Chat $chat) {
-                    return $chat;
-                }
-            );
-            $chat->type = $callback['message']['chat']['type'];
-            $this->Chats->save($chat);
+            $chat = $this->Chats->get($callback['message']['chat']['id']);
 
             $this->loadModel('Users');
-            $user = $this->Users->findOrCreate($this->Users->findById($callback['from']['id']),
-                function(User $user) {
-                    return $user;
-                });
-            $user->id = $callback['from']['id'];
+            $user = $this->Users->get($callback['from']['id']);
+
             $user->last_activity = new FrozenTime();
-            $user->chat_id = $chat->id;
-            $user->firstname = $callback['from']['first_name'];
-            $user->lastname = $callback['from']['last_name'];
-            $user->username = $callback['from']['username'];
-            $user->is_bot = (bool)$callback['from']['is_bot'];
             $result = $this->Users->save($user);
             if (!$result) {
                 throw new ValidationException($user);
             }
 
-            $response = $callback['data'];
-            if ($response) {
-                $this->loadModel('Users');
-                $user->last_activity = new FrozenTime();
-                $result = $this->Users->save($user);
+            $this->loadModel('Events');
+            /** @var \App\Model\Entity\Event $event */
+            $event = $this->Events->get($eventId);
+
+            $this->loadModel('Votes');
+            $vote = $this->Votes->newEntity([
+                'user_id' => $user->id,
+                'event_id' => $event->id,
+                'vote' => ((int)$vote > 0 ? true : false),
+            ]);
+
+            $this->Votes->getConnection()->transactional(function () use ($user, $event, $vote) {
+                $this->Votes->deleteAll([
+                    'user_id' => $user->id,
+                    'event_id' => $event->id,
+                ]);
+                $result = $this->Votes->save($vote);
                 if (!$result) {
-                    throw new ValidationException($user);
+                    throw new ValidationException($result);
                 }
-            }
+            });
+
+            $votes = $this->Votes->find()
+                ->select()
+                ->where([
+                    'event_id' => $event->id,
+                ])
+                ->contain([
+                    'Users' => function (Query $q) {
+                        $q->order([
+                            'User.vote' => 'DESC',
+                            'User.firstname' => 'ASC',
+                        ]);
+                        return $q;
+                    }
+                ]);
 
             $text = $this->renderTemplate('new',
-                [
-                    'message' => $callback['message']['text'],
-                    'user' => $user,
-                    'chat' => $chat,
-//                'votes' => $event->votes
-                ]);
+            [
+                'message' => $event->title, // FIXME: correct me
+                'user' => $user,
+                'chat' => $chat,
+                'votes' => $votes
+            ]);
+            $response = $this->TelegramApi->request('editMessageText', [
+                'chat_id' => $chat->id,
+                'message_id' => $event->id_message +1,
+                'text' => $text,
+                'parse_mode' => 'Markdown',
+                'reply_markup' => $this->TelegramApi->getReplyKeyboard($event),
+            ]);
+            $this->log($response);
         } catch (ForbiddenException $e) {
             $this->Chats->delete($this->Chats->get($callback['chat']['id']));
         } catch (BadRequestException $e) {
             if (isset($callback) && $callback['chat']['type'] === 'private') {
-                \App\Api\TelegramApi::request(
-                    env('TELEGRAM_APIKEY'),
+                $this->TelegramApi->request(
                     'sendMessage',
                     [
                         'chat_id' => $callback['chat']['id'],
                         'reply_to_message_id' => $callback['message_id'],
-                        'text' => file_get_contents(APP . 'Template/Commands/Errors/unknown_command.markdown'),
+                        'text' => $this->renderTemplate('unknown_command'),
                     ]
                 );
             }
@@ -251,8 +284,7 @@ class TelegramBotController extends AppController
     {
         $message = $this->renderTemplate($template);
 
-        $response = \App\Api\TelegramApi::request(
-            env('TELEGRAM_APIKEY'),
+        $response = $this->TelegramApi->request(
             'sendMessage',
             [
                 'chat_id' => $chat->id,
@@ -273,8 +305,7 @@ class TelegramBotController extends AppController
                 'is_private' => $chat->type === 'private',
             ]);
 
-        $response = \App\Api\TelegramApi::request(
-            env('TELEGRAM_APIKEY'),
+        $response = $this->TelegramApi->request(
             'sendMessage',
             [
                 'chat_id' => $chat->id,
@@ -290,7 +321,7 @@ class TelegramBotController extends AppController
      * @param string $user
      * @param string $arg
      */
-    protected function commandNew(string $template, Chat $chat, User $user, $arg = '')
+    protected function commandNew(string $template, Chat $chat, User $user, $arg = '', $messageId = null)
     {
         // TODO: suggest title if $arg is not set
 
@@ -301,21 +332,29 @@ class TelegramBotController extends AppController
                 'chat' => $chat,
             ]);
 
-        $response = \App\Api\TelegramApi::request(
-            env('TELEGRAM_APIKEY'),
+        $this->loadModel('Events');
+        $event = $this->Events->newEntity([
+            'id' => Text::uuid(),
+            'chat_id' => $chat->id,
+            'author_id' => $user->id,
+            'id_message' => $messageId,
+            'title' => $arg,
+            'date' => new FrozenTime(),
+            'min_responses' => null,
+            'geopoint' => null,
+        ]);
+        $result = $this->Events->save($event);
+        if (!$result) {
+            throw new ValidationException($result);
+        }
+
+        $response = $this->TelegramApi->request(
             'sendMessage',
             [
                 'chat_id' => $chat->id,
                 'parse_mode' => 'Markdown',
                 'text' => $message,
-                'reply_markup' => json_encode([
-                    "inline_keyboard" => [
-                        [
-                            ["text" => "Y", "callback_data" => 1,],
-                            ["text" => "N", "callback_data" => -1,],
-                        ],
-                    ],
-                ]),
+                'reply_markup' => $this->TelegramApi->getReplyKeyboard($event),
             ]
         );
 
@@ -357,8 +396,7 @@ class TelegramBotController extends AppController
                 'inactive' => $inactive,
             ]);
 
-        $response = \App\Api\TelegramApi::request(
-            env('TELEGRAM_APIKEY'),
+        $response = $this->TelegramApi->request(
             'sendMessage',
             [
                 'chat_id' => $chat->id,
@@ -376,8 +414,7 @@ class TelegramBotController extends AppController
     {
         $message = $this->renderTemplate($template);
 
-        $response = \App\Api\TelegramApi::request(
-            env('TELEGRAM_APIKEY'),
+        $response = $this->TelegramApi->request(
             'sendMessage',
             [
                 'chat_id' => $chat->id,

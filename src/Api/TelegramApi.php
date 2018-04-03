@@ -3,11 +3,11 @@
 namespace App\Api;
 
 use Cake\Core\Configure;
+use Cake\Error\Debugger;
 use Cake\Log\Log;
 use Cake\Log\LogTrait;
 use Cake\Network\Exception\ForbiddenException;
 use Cake\Network\Http\Client;
-use Psr\Log\LogLevel;
 
 /**
  * Class TelegramApi
@@ -34,7 +34,7 @@ class TelegramApi
 
         Log::debug(__('Sending a request to: {url}; Payload: {payload}', [
             'url' => $url,
-            'payload' => print_r($payload, true),
+            'payload' => Debugger::exportVar($payload),
         ]));
         $response = $api->post($url, $payload, [
             'type' => 'json'
@@ -43,12 +43,17 @@ class TelegramApi
         $data = $response->body('json_decode');
 
         if ($response->getStatusCode() === 403) {
-            Log::error(print_r($data, true));
+            Log::error(Debugger::exportVar($data));
             throw new ForbiddenException();
         }
 
+        if ($response->getStatusCode() === 400) {
+            Log::error(Debugger::exportVar($response) . PHP_EOL . Debugger::exportVar($data));
+            return false;
+        }
+
         if (!$response->isOk()) {
-            Log::error(print_r($data, true));
+            Log::error(Debugger::exportVar($response));
             throw new \RuntimeException(sprintf(__('Telegram responded error: "%s"'), $data->description), 502);
         }
 

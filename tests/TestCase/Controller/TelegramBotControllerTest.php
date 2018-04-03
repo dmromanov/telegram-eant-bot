@@ -31,10 +31,6 @@ class TelegramBotControllerTest extends IntegrationTestCase
     public function testWebhookNewCommand()
     {
         // Enable PSR-7 integration testing.
-//        $this->useHttpServer(true);
-        $this->configRequest([
-            'type' => 'json',
-        ]);
         $this->post(
             '/api/telegram-bot/webhook/123',
             [

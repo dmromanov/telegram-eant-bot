@@ -18,6 +18,8 @@ use Cake\ORM\Entity;
  */
 class Vote extends Entity
 {
+    const YES = 'Y';
+    const NO = 'N';
 
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().

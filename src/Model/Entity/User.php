@@ -21,6 +21,8 @@ use Cake\Utility\Text;
  *
  * @property \App\Model\Entity\Chat $chat
  * @property \App\Model\Entity\Vote[] $votes
+ *
+ * @property string $fullName
  */
 class User extends Entity
 {
