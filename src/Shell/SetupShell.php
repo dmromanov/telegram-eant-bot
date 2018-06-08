@@ -5,6 +5,8 @@ use App\Api\TelegramApi;
 use App\Model\Table\ChatsTable;
 use Cake\Console\Shell;
 use Cake\Filesystem\File;
+use Cake\Http\Client;
+use function sprintf;
 
 /**
  * Setup shell command.
@@ -77,12 +79,25 @@ class SetupShell extends Shell
 
     /**
      * @param string $domain
+     * @param string $certificatePath
+     * @param int $maxConnections
      *
      * @return bool|int|null Success or error code.
      */
-    public function webhookRegister(string $domain, string $certificatePath, $maxConnections = null)
+    public function webhookRegister(string $domain, string $certificatePath, int $maxConnections = 5)
     {
+        $url = sprintf('https://%s/api/telegram-bot/webhook/%s', $domain, $this->param('apiKey'));
+        $this->out(__('Checking whether <info>{0}</info> is accessible', $url));
+
+        $client = new Client();
+        $response = $client->get($url);
+        if (!$response->isOk()) {
+            $this->err(__('Received HTTP {0}, {1}', $response->getStatusCode(), $response->body()));
+            $this->abort(__('Provided URL is unaccessible.'));
+        }
+
         $this->out(__('Enabling webhook.'));
+        $this->out(__('Using <info>{0}</info>', $this->param('apiKey')));
         $certificate = new File($certificatePath);
         try {
             if (!$certificate->readable()) {
@@ -99,7 +114,7 @@ class SetupShell extends Shell
             $this->param('apiKey'),
             'setWebhook',
             [
-                'url' => sprintf('https://%s/api/telegram-bot/webhook/%s', $domain, $this->param('apiKey')),
+                'url' => $url,
             //                'certificate' => $certificate->handle,
                 'max_connections' => $maxConnections,
                 'allowed_updates' => [
