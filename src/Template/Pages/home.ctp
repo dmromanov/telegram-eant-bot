@@ -21,14 +21,14 @@ $this->layout = false;
     <?= $this->Html->charset() ?>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
-        EONT Bot
+        EANT Bot
     </title>
 
     <?= $this->Html->meta('icon') ?>
 </head>
 <body class="home">
 
-<h1><?php __('Nothing to do here…') ?></h1>
+<h1><?= __('Nothing to do here…') ?></h1>
 
 </body>
 </html>

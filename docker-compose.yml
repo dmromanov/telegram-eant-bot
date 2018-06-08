@@ -1,0 +1,33 @@
+version: '3.3'
+
+services:
+  web:
+    image: nginx:latest
+#    build: .docker/nginx/
+    ports:
+      - ${EANT_LISTEN:-127.0.2.2:8080}:80
+    volumes:
+      - ./:/var/www/html:ro
+      - .docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    restart: always
+    links:
+        - php
+
+  php:
+    build: .docker/php/
+    image: php:7.2-fpm
+    volumes:
+      - ./:/var/www/html
+      - /var/run/mysqld/mysqld.sock:/var/run/mysqld.sock
+      - /etc/letsencrypt/archive/eant.romanov.online/:/tmp/certs/
+    environment:
+      - DEBUG=${EANT_DEBUG:-false}
+      - DATABASE_URL=${EANT_DATABASE_URL}?unix_socket=/var/run/mysqld.sock&encoding=utf8mb4&cacheMetadata=true
+      - TELEGRAM_APIKEY=${EANT_TELEGRAM_APIKEY}
+      - CACHE_DEFAULT_URL=Apc://default?prefix=eant_&serialize=true
+      - CACHE_CAKECORE_URL=Apc://_cake_core_?prefix=eant_cake_core_&serialize=true
+      - CACHE_CAKEMODEL_URL=Apc://_cake_model_?prefix=eant_cake_core_&serialize=true
+      - LOG_ERROR_URL=file:///var/www/html/logs/error.log?levels[]=warning&levels[]=error&levels[]=critical&levels[]=alert&levels[]=emergency&prefix=PHP&flag=5
+      - LOG_QUERIES_URL=file:///dev/stdout
+      - LOG_DEBUG_URL=file:///var/www/html/logs/debug.log?levels[]=notice&levels[]=info&levels[]=debug
+    restart: always

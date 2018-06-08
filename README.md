@@ -46,6 +46,10 @@ Clean a database (when switching between different bots accounts):
 $ TELEGRAM_APIKEY=<api-key> DATABASE_URL=<database-url> ./bin/cake setup clean_db
 ```
 
+## Exposed APIS
+
+
+
 ## Authors
 
 * Dmitrii Romanov — the idea author and the main developer dmitrii.romanov@firstlinesoftware.com 

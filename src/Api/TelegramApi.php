@@ -2,7 +2,7 @@
 
 namespace App\Api;
 
-use Cake\Core\Configure;
+use Cake\Cache\Cache;
 use Cake\Error\Debugger;
 use Cake\Log\Log;
 use Cake\Log\LogTrait;
@@ -16,6 +16,8 @@ use Cake\Network\Http\Client;
 class TelegramApi
 {
     use LogTrait;
+
+    protected const CACHE_KEY_TELEGRAM_UPDATEID = 'Telegram.update_id';
 
     /**
      * @param string $apiKey
@@ -69,15 +71,22 @@ class TelegramApi
      *
      * @return bool
      */
-    public static function storeUpdateId(string $updateId)
+    public static function storeUpdateId(string $updateId): bool
     {
-        if ($updateId <= Configure::read('Telegram.update_id')) {
+        if ($updateId <= TelegramApi::retrieveUpdateId()) {
             return false;
         }
 
-        Configure::write('Telegram.update_id', $updateId);
-        Configure::dump('telegram', 'default', ['Telegram']);
+        Cache::write(static::CACHE_KEY_TELEGRAM_UPDATEID, $updateId);
 
         return true;
+    }
+
+    /**
+     * @return int|null
+     */
+    public static function retrieveUpdateId(): ?int
+    {
+        return Cache::read(static::CACHE_KEY_TELEGRAM_UPDATEID);
     }
 }
