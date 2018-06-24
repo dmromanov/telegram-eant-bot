@@ -7,7 +7,7 @@
 
 Активисты (создали хотя бы одно событие):
 <?php foreach ($activists as $user): ?>
-    <?php echo $user->fullName, PHP_EOL; ?>
+    <?= $user->fullName, PHP_EOL; ?>
 <?php endforeach; ?>
 <?php endif; ?>
 <?php if (iterator_count($activists)):?>

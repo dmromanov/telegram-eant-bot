@@ -22,6 +22,7 @@ class TelegramBotControllerTest extends IntegrationTestCase
      */
     public function setUp()
     {
+        parent::setUp();
         $_ENV['TELEGRAM_APIKEY'] = '123';
     }
 
@@ -30,7 +31,6 @@ class TelegramBotControllerTest extends IntegrationTestCase
      */
     public function testWebhookNewCommand()
     {
-        // Enable PSR-7 integration testing.
         $this->post(
             '/api/telegram-bot/webhook/123',
             [

@@ -47,7 +47,7 @@ class VotesFixture extends TestFixture
     public $records = [
         [
             'id' => 1,
-            'user_id' => 'Lorem ipsum dolor sit amet',
+            'user_id' => '3ba8a774-77df-11e8-8d09-1bba886a964a',
             'event_id' => 'fe033a68-1d3d-4205-a773-75c316bc9fc6',
             'vote' => 1,
             'created' => '2018-03-31 14:56:19',

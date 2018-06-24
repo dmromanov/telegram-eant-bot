@@ -17,7 +17,6 @@ use Cake\Event\Event;
 use Cake\I18n\FrozenTime;
 use Cake\Network\Exception\BadRequestException;
 use Cake\Network\Exception\ForbiddenException;
-use Cake\ORM\Query;
 use Cake\Utility\Inflector;
 use Cake\Utility\Text;
 use Cake\View\View;
@@ -205,12 +204,13 @@ class TelegramBotController extends AppController
             $this->loadModel('Events');
             /** @var \App\Model\Entity\Event $event */
             $event = $this->Events->get($eventId);
+            unset($eventId);
 
             $this->loadModel('Votes');
             $vote = $this->Votes->newEntity([
                 'user_id' => $user->id,
                 'event_id' => $event->id,
-                'vote' => ((int)$vote > 0 ? true : false),
+                'vote' => $vote > 0,
             ]);
 
             $this->Votes->getConnection()->transactional(function () use ($user, $event, $vote) {
@@ -224,20 +224,7 @@ class TelegramBotController extends AppController
                 }
             });
 
-            $votes = $this->Votes->find()
-                ->select()
-                ->where([
-                    'event_id' => $event->id,
-                ])
-                ->contain([
-                    'Users' => function (Query $q) {
-                        $q->order([
-                            'User.vote' => 'DESC',
-                            'User.firstname' => 'ASC',
-                        ]);
-                        return $q;
-                    }
-                ]);
+            $votes = $this->Votes->reportByEvent($event->id);
 
             $text = $this->renderTemplate('new',
             [
@@ -290,7 +277,8 @@ class TelegramBotController extends AppController
 
     /**
      * @param string $template
-     * @param string $chat
+     * @param Chat $chat
+     * @param User $user
      */
     protected function commandHelp(string $template, Chat $chat, User $user)
     {
@@ -311,9 +299,11 @@ class TelegramBotController extends AppController
 
     /**
      * @param string $template
-     * @param string $chat
-     * @param string $user
+     * @param Chat $chat
+     * @param User $user
      * @param string $arg
+     *
+     * @throws \Exception
      */
     protected function commandNew(string $template, Chat $chat, User $user, $arg = '')
     {
@@ -344,7 +334,7 @@ class TelegramBotController extends AppController
             ]);
             $result = $this->Events->save($event);
             if (!$result) {
-                $this->log(Debugger::exportVar($event->getErrors()));
+                $this->log(Debugger::exportVar($event->getErrors()), LogLevel::ERROR);
                 throw new ValidationException($event);
             }
 
@@ -388,14 +378,14 @@ class TelegramBotController extends AppController
             ->where([
                 'chat_id' => $chat->id,
                 'organized_events >' => 0,
-            ])
-            ->all();
-        $inactive = $this->Users->find()
+            ]);
+
+        $inactive = $this->Users
+            ->find()
             ->where([
                 'chat_id' => $chat->id,
                 'last_activity <' => $reportingDate,
-            ])
-            ->all();
+            ]);
 
         $message = $this->renderTemplate($template,
             [

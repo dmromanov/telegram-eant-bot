@@ -85,4 +85,27 @@ class VotesTable extends Table
 
         return $rules;
     }
+
+    /**
+     * @param string $eventId Event's UUID
+     *
+     * @return Query
+     */
+    public function reportByEvent(string $eventId): Query
+    {
+        return $this
+            ->find()
+            ->where([
+                'event_id' => $eventId,
+            ])
+            ->contain([
+                'Users' => function (Query $q) {
+                    $q->order([
+                        'User.vote' => 'DESC',
+                        'User.firstname' => 'ASC',
+                    ]);
+                    return $q;
+                }
+            ]);
+    }
 }

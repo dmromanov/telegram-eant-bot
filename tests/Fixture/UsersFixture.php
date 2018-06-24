@@ -49,8 +49,8 @@ class UsersFixture extends TestFixture
      */
     public $records = [
         [
-            'id' => '40e001da-0899-41bb-bedd-b75b909181d8',
-            'chat_id' => 'Lorem ipsum dolor sit amet',
+            'id' => '3ba8a774-77df-11e8-8d09-1bba886a964a',
+            'chat_id' => '09e6fc02-f520-452f-8893-904a655e34c3',
             'firstname' => 'Lorem ipsum dolor sit amet',
             'lastname' => 'Lorem ipsum dolor sit amet',
             'username' => 'Lorem ipsum dolor sit amet',

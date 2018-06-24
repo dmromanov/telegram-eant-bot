@@ -25,9 +25,9 @@ class VotesTableTest extends TestCase
      */
     public $fixtures = [
         'app.votes',
+        'app.events',
         'app.users',
         'app.chats',
-        'app.events'
     ];
 
     /**
@@ -82,5 +82,17 @@ class VotesTableTest extends TestCase
     public function testBuildRules()
     {
         $this->markTestIncomplete('Not implemented yet.');
+    }
+
+    /**
+     * Test reportByEvent method
+     */
+    public function testReportByEvent()
+    {
+        $expected = 1;
+        $result = $this->Votes
+            ->reportByEvent('fe033a68-1d3d-4205-a773-75c316bc9fc6')
+            ->count();
+        $this->assertSame($expected, $result);
     }
 }

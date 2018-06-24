@@ -50,14 +50,14 @@ class EventsFixture extends TestFixture
      */
     public $records = [
         [
-            'id' => '056c5682-1144-44d7-be49-3350f1881906',
-            'chat_id' => 'Lorem ipsum dolor sit amet',
-            'author_id' => 'Lorem ipsum dolor sit amet',
-            'id_message' => 'Lorem ipsum dolor sit amet',
+            'id' => 'fe033a68-1d3d-4205-a773-75c316bc9fc6',
+            'chat_id' => '09e6fc02-f520-452f-8893-904a655e34c3',
+            'author_id' => '3ba8a774-77df-11e8-8d09-1bba886a964a',
+            'id_message' => '123456',
             'title' => 'Lorem ipsum dolor sit amet',
             'date' => '2018-03-31 14:56:18',
             'min_responses' => 1,
-            'geopoint' => 'Lorem ipsum dolor sit amet',
+            'geopoint' => '1,2',
             'created' => '2018-03-31 14:56:18',
             'modified' => '2018-03-31 14:56:18'
         ],
