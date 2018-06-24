@@ -67,4 +67,34 @@ class SetupShellTest extends ConsoleIntegrationTestCase
     {
         $this->markTestIncomplete('Not implemented yet.');
     }
+
+    /**
+     * Test webhookRegister method
+     *
+     * @return void
+     */
+    public function testWebhookRegister()
+    {
+        $this->markTestIncomplete('Not implemented yet.');
+    }
+
+    /**
+     * Test webhookUnregister method
+     *
+     * @return void
+     */
+    public function testWebhookUnregister()
+    {
+        $this->markTestIncomplete('Not implemented yet.');
+    }
+
+    /**
+     * Test cleanDb method
+     *
+     * @return void
+     */
+    public function testCleanDb()
+    {
+        $this->markTestIncomplete('Not implemented yet.');
+    }
 }

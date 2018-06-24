@@ -43,20 +43,32 @@ class TelegramApiComponentTest extends TestCase
     }
 
     /**
-     * Test initial setup
+     * Test request method
      *
      * @return void
      */
-    public function testInitialization()
+    public function testRequest()
     {
         $this->markTestIncomplete('Not implemented yet.');
     }
 
-    public function testRequest() {
-        $this->markTestIncomplete();
+    /**
+     * Test getReplyKeyboard method
+     *
+     * @return void
+     */
+    public function testGetReplyKeyboard()
+    {
+        $this->markTestIncomplete('Not implemented yet.');
     }
 
-    public function testParse() {
+    /**
+     * Test parse method
+     *
+     * @return void
+     */
+    public function testParse()
+    {
         $payload = '/new title @foobar';
         $expected = ['/new', 'title @foobar'];
         $result = $this->TelegramApi->parse($payload);
