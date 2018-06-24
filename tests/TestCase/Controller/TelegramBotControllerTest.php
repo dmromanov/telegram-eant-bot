@@ -41,6 +41,7 @@ class TelegramBotControllerTest extends IntegrationTestCase
                         'id' => 151939862,
                         'is_bot' => false,
                         'first_name' => 'Foo',
+                        'last_name' => 'Bar',
                         'username' => 'foobar',
                         'language_code' => 'en',
                     ],

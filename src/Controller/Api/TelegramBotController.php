@@ -144,8 +144,8 @@ class TelegramBotController extends AppController
                     $user->id = $message['from']['id'];
                     $user->last_activity = new FrozenTime();
                     $user->chat_id = $chat->id;
-                    $user->firstname = $message['from']['first_name'];
-                    $user->lastname = $message['from']['last_name'];
+                    $user->firstname = $message['from']['first_name'] ?: '';
+                    $user->lastname = $message['from']['last_name'] ?: '';
                     $user->username = $message['from']['username'];
                     $user->is_bot = (bool)$message['from']['is_bot'];
 
