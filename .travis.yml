@@ -10,15 +10,14 @@ cache:
     - $HOME/.composer/cache/files
 
 php:
-  - 7.0
-  - 7.1
   - 7.2
+  - nightly
 
 matrix:
   fast_finish: true
 
   include:
-    - php: 7.0
+    - php: 7.2
 
 before_script:
   - if [[ $PHPCS != 1 ]]; then composer install; fi
@@ -27,10 +26,10 @@ before_script:
 
 script:
   - if [[ $PHPCS != 1 ]]; then vendor/bin/phpunit; fi
-  - if [[ $TRAVIS_PHP_VERSION = 7.0 ]]; then export CODECOVERAGE=1; vendor/bin/phpunit --coverage-clover=clover.xml; fi
+  - if [[ $TRAVIS_PHP_VERSION = 7.2 ]]; then export CODECOVERAGE=1; vendor/bin/phpunit --coverage-clover=clover.xml; fi
 
 after_success:
-  - if [[ $TRAVIS_PHP_VERSION = 7.0 ]]; then bash <(curl -s https://codecov.io/bash); fi
+  - if [[ $TRAVIS_PHP_VERSION = 7.2 ]]; then bash <(curl -s https://codecov.io/bash); fi
 
 notifications:
   email: false
